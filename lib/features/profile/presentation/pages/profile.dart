@@ -21,7 +21,7 @@ class Profile extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _profileBanner(),
+            _profileBanner(context),
             _infoCarousel(),
             _myAccountsHeader(),
             _accountTabs(),
@@ -33,7 +33,7 @@ class Profile extends StatelessWidget {
     );
   }
 
-  Widget _profileBanner() {
+  Widget _profileBanner(BuildContext context) {
     return Container(
       margin: const EdgeInsetsGeometry.fromSTEB(16, 0, 16, 15),
       padding: const EdgeInsets.all(12),
@@ -63,7 +63,9 @@ class Profile extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               ElevatedButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.of(context).pushNamed('/addProfileData');
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
