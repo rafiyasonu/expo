@@ -1,3 +1,4 @@
+import 'package:expo/features/profile/verification/AddProfileData.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constant/colors.dart';
@@ -63,9 +64,14 @@ class Profile extends StatelessWidget {
               ),
               const SizedBox(width: 12),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pushNamed('/addProfileData');
-                },
+               onPressed: (){
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const ProfileScreen(),
+                      ),
+                    );
+                  } ,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
