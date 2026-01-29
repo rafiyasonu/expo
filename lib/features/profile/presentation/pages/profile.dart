@@ -1,4 +1,4 @@
-import 'package:expo/features/profile/verification/AddProfileData.dart';
+import 'package:expo/features/profile/verification/profile_screen.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constant/colors.dart';
