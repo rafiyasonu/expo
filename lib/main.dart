@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'core/layout/main_layout.dart';
 import 'core/theme/theme.dart';
-import 'features/auth/login.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,9 +14,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Expo',
-      theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
-      home: const Login(),
+      theme: AppTheme.lightTheme,
+      home: const MainLayout(),
     );
   }
 }

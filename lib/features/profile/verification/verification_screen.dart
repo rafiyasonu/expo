@@ -1,5 +1,7 @@
+import 'package:expo/features/profile/verification/email_otp_screen.dart';
+import 'package:expo/features/profile/verification/phone_verification.dart';
+import 'package:expo/features/profile/verification/profile_information_screen.dart';
 import 'package:flutter/material.dart';
-import 'email_otp_screen.dart';
 import 'package:expo/core/constant/colors.dart';
 
 class VerificationScreen extends StatelessWidget {
@@ -18,7 +20,6 @@ class VerificationScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             const Text(
               "Verify your contact details",
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -40,15 +41,32 @@ class VerificationScreen extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => const EmailOtpScreen(),
-                  ),
+                  MaterialPageRoute(builder: (_) => const EmailOtpScreen()),
                 );
               },
             ),
 
-            _tile(context, Icons.person, "Add profile information", false),
-            _tile(context, Icons.phone, "Confirm phone number", false),
+            _tile(context, Icons.person, "Add profile information", 
+            true ,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ProfileInformationScreen()),
+              );
+            },
+            ),
+            _tile(
+              context,
+              Icons.phone,
+              "Confirm phone number",
+              true,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PhoneVerificationScreen()),
+                );
+              },
+            ),
 
             const Spacer(),
 
@@ -59,7 +77,12 @@ class VerificationScreen extends StatelessWidget {
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                 ),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const ProfileInformationScreen(),
+                  ),
+                ),
                 child: const Text("Continue"),
               ),
             ),
@@ -94,7 +117,7 @@ class VerificationScreen extends StatelessWidget {
               verified ? Icons.check_circle : Icons.arrow_forward_ios,
               size: 18,
               color: verified ? Colors.green : Colors.grey,
-            )
+            ),
           ],
         ),
       ),

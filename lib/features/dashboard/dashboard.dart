@@ -1,42 +1,40 @@
 import 'package:expo/features/profile/verification/profile_screen.dart';
 import 'package:flutter/material.dart';
-
 import '../../../../core/constant/colors.dart';
 
-class Profile extends StatelessWidget {
-  const Profile({super.key});
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
 
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  int _currentIndex = 0;
+
+   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Exness"),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none),
-            onPressed: () {},
-          ),
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _profileBanner(context),
+          _infoCarousel(),
+          _myAccountsHeader(),
+          _accountTabs(),
+          _accountCard(),
+          const SizedBox(height: 24),
         ],
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _profileBanner(context),
-            _infoCarousel(),
-            _myAccountsHeader(),
-            _accountTabs(),
-            _accountCard(),
-            const SizedBox(height: 24),
-          ],
-        ),
       ),
     );
   }
 
+  // ================= UI SECTIONS =================
+
   Widget _profileBanner(BuildContext context) {
     return Container(
-      margin: const EdgeInsetsGeometry.fromSTEB(16, 0, 16, 15),
+      margin: const EdgeInsets.fromLTRB(16, 0, 16, 15),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.secondary,
@@ -55,27 +53,22 @@ class Profile extends StatelessWidget {
               OutlinedButton(
                 onPressed: () {},
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primary,
                   backgroundColor: Colors.white,
-                  side: const BorderSide(color: Colors.white),
-                  padding: const EdgeInsets.symmetric(horizontal: 20), // 👈 horizontal padding
                 ),
                 child: const Text("Learn more"),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               ElevatedButton(
-               onPressed: (){
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const ProfileScreen(),
-                      ),
-                    );
-                  } ,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ProfileScreen(),
+                    ),
+                  );
+                },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20), // 👈 horizontal padding
                 ),
                 child: const Text("Complete profile"),
               ),
@@ -87,15 +80,14 @@ class Profile extends StatelessWidget {
   }
 
   Widget _infoCarousel() {
-    return Container(
+    return SizedBox(
       height: 140,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
       child: PageView(
         children: [
           _infoCard(
             title: "New timeframes in terminal",
             subtitle:
-            "Use 2m, 45m, or custom timeframes for deeper analysis.",
+                "Use 2m, 45m, or custom timeframes for deeper analysis.",
           ),
           _infoCard(
             title: "Secure your funds",
@@ -108,6 +100,7 @@ class Profile extends StatelessWidget {
 
   Widget _infoCard({required String title, required String subtitle}) {
     return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
@@ -118,7 +111,7 @@ class Profile extends StatelessWidget {
           children: [
             Text(title,
                 style:
-                const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             Text(subtitle),
           ],
@@ -148,14 +141,11 @@ class Profile extends StatelessWidget {
   }
 
   Widget _accountTabs() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16),
       child: Row(
-        children: const [
-          Text(
-            "Real",
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
+        children: [
+          Text("Real", style: TextStyle(fontWeight: FontWeight.bold)),
           SizedBox(width: 16),
           Text("Demo", style: TextStyle(color: Colors.grey)),
         ],
@@ -183,59 +173,13 @@ class Profile extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            const Text(
-              "#232835630 Standard",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            const Text("#232835630 Standard",
+                style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            const Text(
-              "0.00 USD",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _actionButton(Icons.show_chart, "Trade"),
-                _actionButton(Icons.download, "Deposit"),
-                _actionButton(Icons.upload, "Withdraw"),
-                _actionButton(Icons.more_vert, "More"),
-              ],
-            ),
-            const Divider(height: 32),
-            _accountDetail("Actual leverage", "1:200"),
-            _accountDetail("Floating P/L", "0.00 USD"),
-            _accountDetail("Free margin", "0.00 USD"),
-            _accountDetail("Equity", "0.00 USD"),
-            _accountDetail("Platform", "MT5"),
+            const Text("0.00 USD",
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _actionButton(IconData icon, String label) {
-    return Column(
-      children: [
-        CircleAvatar(
-          backgroundColor: AppColors.primary,
-          child: Icon(icon, color: Colors.white),
-        ),
-        const SizedBox(height: 6),
-        Text(label),
-      ],
-    );
-  }
-
-  Widget _accountDetail(String title, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(title, style: const TextStyle(color: Colors.grey)),
-          Text(value),
-        ],
       ),
     );
   }

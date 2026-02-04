@@ -1,10 +1,9 @@
 import 'package:expo/features/auth/signup.dart';
-import 'package:expo/features/profile/presentation/pages/profile.dart';
+import 'package:expo/features/dashboard/dashboard.dart';
 import 'package:flutter/material.dart';
 import '../../core/constant/colors.dart';
 import '../../core/widget/buttons/dynamic_button.dart';
 import '../../core/widget/textfields/my_text_field.dart';
-import '../../core/widget/textfields/onboarding_textfield.dart';
 import 'forgot_password.dart';
 
 class Login extends StatefulWidget {
@@ -169,7 +168,7 @@ class _LoginState extends State<Login> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const Profile(),
+                        builder: (context) => const DashboardScreen(),
                       ),
                     );
                   } : null
