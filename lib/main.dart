@@ -1,3 +1,4 @@
+import 'package:expo/features/auth/login.dart';
 import 'package:flutter/material.dart';
 import 'core/layout/main_layout.dart';
 import 'core/theme/theme.dart';
@@ -16,7 +17,7 @@ class MyApp extends StatelessWidget {
       title: 'Expo',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
-      home: const MainLayout(),
+      home: const Login(),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:expo/core/layout/main_layout.dart';
 import 'package:expo/features/auth/signup.dart';
 import 'package:expo/features/dashboard/dashboard.dart';
 import 'package:flutter/material.dart';
@@ -168,7 +169,7 @@ class _LoginState extends State<Login> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const DashboardScreen(),
+                        builder: (context) => const MainLayout(),
                       ),
                     );
                   } : null
