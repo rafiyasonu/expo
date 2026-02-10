@@ -1,5 +1,9 @@
-import 'package:expo/features/accounts/deposit_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+import 'package:expo/features/accounts/accounts_screen.dart';
+import 'package:expo/features/accounts/deposit_screen.dart';
+import 'package:expo/features/accounts/withdrawal.dart';
 import 'package:expo/features/dashboard/dashboard.dart';
 import 'package:expo/features/profile/verification/profile_screen.dart';
 import 'package:expo/features/profile/verification/verification_screen.dart';
@@ -18,12 +22,17 @@ class _MainLayoutState extends State<MainLayout> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentIndex = 0;
 
-  // 🔹 GLOBAL PAGES
+  /// Wallet Data
+  bool hideBalance = false;
+  double walletBalance = 0.00;
+  String walletId = "1218392945974120434";
+
+  /// Pages
   final List<Widget> _pages = const [
-    DashboardScreen(),   // Home
-    Center(child: Text("Trade")), // Trade (future)
-    DepositScreen(),     // ✅ Deposit integrated
-    ProfileScreen(),     // Profile
+    DashboardScreen(),
+    Center(child: Text("Trade")),
+    DepositScreen(),
+    ProfileScreen(),
   ];
 
   @override
@@ -31,19 +40,33 @@ class _MainLayoutState extends State<MainLayout> {
     return Scaffold(
       key: _scaffoldKey,
 
-      // 🔹 GLOBAL DRAWER
-      drawer: _globalDrawer(),
+      /// DRAWER
+      drawer: _drawer(),
 
-      // 🔹 GLOBAL APP BAR
+      /// APPBAR
       appBar: AppBar(
         title: const Text("Exness"),
-        leading: IconButton(
-          icon: const CircleAvatar(
-            backgroundColor: AppColors.primary,
-            child: Icon(Icons.person, color: Colors.white),
-          ),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        ),
+
+      /// PROFILE ICON WITH BG COLOR
+leading: Padding(
+  padding: const EdgeInsets.all(8),
+  child: InkWell(
+    borderRadius: BorderRadius.circular(50),
+    onTap: () => _scaffoldKey.currentState?.openDrawer(),
+    child: Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: AppColors.primary, // 🎨 BG COLOR
+        shape: BoxShape.circle,
+      ),
+      alignment: Alignment.center,
+      child: _profileIcon(size: 22), // reduce icon size
+    ),
+  ),
+),
+
+
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none),
@@ -52,18 +75,20 @@ class _MainLayoutState extends State<MainLayout> {
         ],
       ),
 
-      // 🔹 PAGE CONTENT
-      body: _pages[_currentIndex],
+      /// BODY
+      body: Column(
+        children: [
+          Expanded(child: _pages[_currentIndex]),
+        ],
+      ),
 
-      // 🔹 GLOBAL BOTTOM NAV
+      /// BOTTOM NAV
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         selectedItemColor: AppColors.primary,
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
-        onTap: (index) {
-          setState(() => _currentIndex = index);
-        },
+        onTap: (index) => setState(() => _currentIndex = index),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -86,31 +111,95 @@ class _MainLayoutState extends State<MainLayout> {
     );
   }
 
+  // ================= PROFILE ICON =================
+
+  Widget _profileIcon({double size = 40}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: const BoxDecoration(
+        color: Colors.white24,
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.person,
+        color: Colors.white,
+      ),
+    );
+  }
+
   // ================= DRAWER =================
 
-  Widget _globalDrawer() {
+  Widget _drawer() {
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(color: AppColors.primary),
+
+          /// FIXED DRAWER HEADER (NO OVERFLOW)
+          DrawerHeader(
+            decoration: const BoxDecoration(
+              color: AppColors.primary,
+            ),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 26,
-                  backgroundColor: Colors.white,
-                  child: Icon(Icons.person, size: 30),
+
+                /// PROFILE ICON + AMOUNT (ONE ROW)
+                Row(
+                  children: [
+                    _profileIcon(size: 44),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        hideBalance
+                            ? "**** USD"
+                            : "${walletBalance.toStringAsFixed(2)} USD",
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
-                SizedBox(height: 12),
-                Text(
-                  "User Menu",
-                  style: TextStyle(color: Colors.white, fontSize: 18),
-                ),
-                Text(
-                  "user@email.com",
-                  style: TextStyle(color: Colors.white70),
+
+                const SizedBox(height: 10),
+
+                /// ACCOUNT ID
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "Account ID: $walletId",
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 13,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(
+                        Icons.copy,
+                        size: 16,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        Clipboard.setData(
+                          ClipboardData(text: walletId),
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text("Account ID copied"),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -126,6 +215,18 @@ class _MainLayoutState extends State<MainLayout> {
             icon: Icons.verified,
             title: "Verification",
             onTap: () => _navigate(const VerificationScreen()),
+          ),
+
+          _drawerItem(
+            icon: Icons.account_balance,
+            title: "Add Account",
+            onTap: () => _navigate(AddAccountsScreen()),
+          ),
+
+          _drawerItem(
+            icon: Icons.account_balance_wallet,
+            title: "Withdrawal",
+            onTap: () => _navigate(WithdrawalScreen()),
           ),
 
           _drawerItem(
@@ -160,7 +261,7 @@ class _MainLayoutState extends State<MainLayout> {
   }
 
   void _navigate(Widget page) {
-    Navigator.pop(context); // close drawer
+    Navigator.pop(context);
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => page),

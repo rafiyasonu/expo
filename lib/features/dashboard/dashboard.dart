@@ -70,7 +70,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                 ),
-                child: const Text("Complete profile"),
+                child: const Text("Complete profile" ,style: TextStyle(color: Colors.white)),
               ),
             ],
           )

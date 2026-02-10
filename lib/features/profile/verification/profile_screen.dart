@@ -10,84 +10,104 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Account",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
 
-            Row(
-              children: [
-                Expanded(child: _statusCard()),
-                const SizedBox(width: 12),
-                Expanded(child: _depositCard()),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
-            const Text(
-              "Verification steps",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-
-            /// STEP 1
-            _verificationStep(
-              context,
-              step: "1",
-              title: "Confirm email and phone number",
-              subtitle: "Add profile information · Phone number",
-              isActive: true,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const VerificationScreen(),
+              /// BACK + ACCOUNT TITLE
+              Row(
+                children: [
+                  InkWell(
+                    onTap: () => Navigator.pop(context),
+                    child: const Icon(
+                      Icons.arrow_back,
+                      size: 24,
+                    ),
                   ),
-                );
-              },
-            ),
-
-            /// STEP 2
-            _verificationStep(
-              context,
-              step: "2",
-              title: "Identity verification",
-              subtitle: "Upload your ID document",
-              isActive: true,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const IdentityVerificationScreen(),
+                  const SizedBox(width: 12),
+                  const Text(
+                    "Account",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                );
-              },
-            ),
+                ],
+              ),
 
-            /// STEP 3
-            _verificationStep(
-              context,
-              step: "3",
-              title: "Residential address verification",
-              subtitle: "Confirm your address",
-              isActive: true,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const ResidentialVerification(),
-                  ),
-                );
-              },
-            ),
-          ],
+              const SizedBox(height: 16),
+
+              Row(
+                children: [
+                  Expanded(child: _statusCard()),
+                  const SizedBox(width: 12),
+                  Expanded(child: _depositCard()),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              const Text(
+                "Verification steps",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 12),
+
+              /// STEP 1
+              _verificationStep(
+                context,
+                step: "1",
+                title: "Confirm email and phone number",
+                subtitle: "Add profile information · Phone number",
+                isActive: true,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const VerificationScreen(),
+                    ),
+                  );
+                },
+              ),
+
+              /// STEP 2
+              _verificationStep(
+                context,
+                step: "2",
+                title: "Identity verification",
+                subtitle: "Upload your ID document",
+                isActive: true,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const IdentityVerificationScreen(),
+                    ),
+                  );
+                },
+              ),
+
+              /// STEP 3
+              _verificationStep(
+                context,
+                step: "3",
+                title: "Residential address verification",
+                subtitle: "Confirm your address",
+                isActive: true,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const ResidentialVerification(),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -155,9 +175,8 @@ class ProfileScreen extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 14,
-                backgroundColor: isActive
-                    ? AppColors.primary
-                    : Colors.grey.shade400,
+                backgroundColor:
+                    isActive ? AppColors.primary : Colors.grey.shade400,
                 child: Text(
                   step,
                   style: const TextStyle(color: Colors.white),
