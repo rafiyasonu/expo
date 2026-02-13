@@ -1,5 +1,8 @@
+import 'dart:convert';
+import 'package:expo/features/auth/login.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:expo/features/accounts/accounts_screen.dart';
 import 'package:expo/features/accounts/deposit_screen.dart';
@@ -22,10 +25,13 @@ class _MainLayoutState extends State<MainLayout> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentIndex = 0;
 
-  /// Wallet Data
+  /// Wallet Data (default)
   bool hideBalance = false;
   double walletBalance = 0.00;
-  String walletId = "1218392945974120434";
+  String walletId = "----";
+
+  /// User data
+  String userEmail = "";
 
   /// Pages
   final List<Widget> _pages = const [
@@ -34,6 +40,45 @@ class _MainLayoutState extends State<MainLayout> {
     DepositScreen(),
     ProfileScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _authGuard();        // 🔐 Block if token missing
+    _loadFromStorage(); // ♻️ Load user + wallet
+  }
+
+  // ================= AUTH GUARD =================
+  Future<void> _authGuard() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    if (token == null || token.isEmpty) {
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const Login()),
+        (route) => false,
+      );
+    }
+  }
+
+  // ================= LOAD STORAGE =================
+  Future<void> _loadFromStorage() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final userData = prefs.getString("user_data");
+
+    if (userData != null) {
+      final user = jsonDecode(userData);
+      userEmail = user["email"] ?? "";
+      walletId = user["wallet_id"]?.toString() ?? walletId;
+      walletBalance =
+          double.tryParse(user["wallet_balance"]?.toString() ?? "0") ?? 0.0;
+    }
+
+    if (mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,25 +92,23 @@ class _MainLayoutState extends State<MainLayout> {
       appBar: AppBar(
         title: const Text("Exness"),
 
-      /// PROFILE ICON WITH BG COLOR
-leading: Padding(
-  padding: const EdgeInsets.all(8),
-  child: InkWell(
-    borderRadius: BorderRadius.circular(50),
-    onTap: () => _scaffoldKey.currentState?.openDrawer(),
-    child: Container(
-      width: 40,
-      height: 40,
-      decoration: BoxDecoration(
-        color: AppColors.primary, // 🎨 BG COLOR
-        shape: BoxShape.circle,
-      ),
-      alignment: Alignment.center,
-      child: _profileIcon(size: 22), // reduce icon size
-    ),
-  ),
-),
-
+        leading: Padding(
+          padding: const EdgeInsets.all(8),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(50),
+            onTap: () => _scaffoldKey.currentState?.openDrawer(),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: AppColors.primary,
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: _profileIcon(size: 22),
+            ),
+          ),
+        ),
 
         actions: [
           IconButton(
@@ -90,29 +133,17 @@ leading: Padding(
         type: BottomNavigationBarType.fixed,
         onTap: (index) => setState(() => _currentIndex = index),
         items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+          BottomNavigationBarItem(icon: Icon(Icons.show_chart), label: "Trade"),
           BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: "Home",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.show_chart),
-            label: "Trade",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet),
-            label: "Deposit",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: "Profile",
-          ),
+              icon: Icon(Icons.account_balance_wallet), label: "Deposit"),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
         ],
       ),
     );
   }
 
   // ================= PROFILE ICON =================
-
   Widget _profileIcon({double size = 40}) {
     return Container(
       width: size,
@@ -121,32 +152,21 @@ leading: Padding(
         color: Colors.white24,
         shape: BoxShape.circle,
       ),
-      child: const Icon(
-        Icons.person,
-        color: Colors.white,
-      ),
+      child: const Icon(Icons.person, color: Colors.white),
     );
   }
 
   // ================= DRAWER =================
-
   Widget _drawer() {
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-
-          /// FIXED DRAWER HEADER (NO OVERFLOW)
           DrawerHeader(
-            decoration: const BoxDecoration(
-              color: AppColors.primary,
-            ),
+            decoration: const BoxDecoration(color: AppColors.primary),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
-                /// PROFILE ICON + AMOUNT (ONE ROW)
                 Row(
                   children: [
                     _profileIcon(size: 44),
@@ -166,41 +186,35 @@ leading: Padding(
                     ),
                   ],
                 ),
-
                 const SizedBox(height: 10),
-
-                /// ACCOUNT ID
                 Row(
                   children: [
                     Expanded(
                       child: Text(
                         "Account ID: $walletId",
                         style: const TextStyle(
-                          color: Colors.white70,
-                          fontSize: 13,
-                        ),
+                            color: Colors.white70, fontSize: 13),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(
-                        Icons.copy,
-                        size: 16,
-                        color: Colors.white,
-                      ),
+                      icon: const Icon(Icons.copy,
+                          size: 16, color: Colors.white),
                       onPressed: () {
-                        Clipboard.setData(
-                          ClipboardData(text: walletId),
-                        );
+                        Clipboard.setData(ClipboardData(text: walletId));
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text("Account ID copied"),
-                          ),
+                          const SnackBar(content: Text("Account ID copied")),
                         );
                       },
                     ),
                   ],
                 ),
+                if (userEmail.isNotEmpty)
+                  Text(
+                    userEmail,
+                    style:
+                        const TextStyle(color: Colors.white70, fontSize: 12),
+                  ),
               ],
             ),
           ),
@@ -210,25 +224,21 @@ leading: Padding(
             title: "Profile",
             onTap: () => _navigate(const ProfileScreen()),
           ),
-
           _drawerItem(
             icon: Icons.verified,
             title: "Verification",
             onTap: () => _navigate(const VerificationScreen()),
           ),
-
           _drawerItem(
             icon: Icons.account_balance,
             title: "Add Account",
             onTap: () => _navigate(AddAccountsScreen()),
           ),
-
           _drawerItem(
             icon: Icons.account_balance_wallet,
             title: "Withdrawal",
             onTap: () => _navigate(WithdrawalScreen()),
           ),
-
           _drawerItem(
             icon: Icons.settings,
             title: "Settings",
@@ -237,9 +247,10 @@ leading: Padding(
 
           const Divider(),
 
-          const ListTile(
-            leading: Icon(Icons.logout),
-            title: Text("Logout"),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text("Logout"),
+            onTap: _logout,
           ),
         ],
       ),
@@ -247,24 +258,36 @@ leading: Padding(
   }
 
   // ================= HELPERS =================
-
   Widget _drawerItem({
     required IconData icon,
     required String title,
     required VoidCallback onTap,
   }) {
-    return ListTile(
-      leading: Icon(icon),
-      title: Text(title),
-      onTap: onTap,
-    );
+    return ListTile(leading: Icon(icon), title: Text(title), onTap: onTap);
   }
 
   void _navigate(Widget page) {
     Navigator.pop(context);
-    Navigator.push(
+    Navigator.push(context, MaterialPageRoute(builder: (_) => page));
+  }
+
+  // ================= LOGOUT =================
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token");
+
+    if (token == null || token.isEmpty) {
+      return; // already logged out
+    }
+
+    await prefs.clear();
+
+    if (!mounted) return;
+
+    Navigator.pushAndRemoveUntil(
       context,
-      MaterialPageRoute(builder: (_) => page),
+      MaterialPageRoute(builder: (_) => const Login()),
+      (route) => false, // 🚫 back disabled
     );
   }
 }

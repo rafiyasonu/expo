@@ -1,5 +1,6 @@
+import 'package:expo/features/auth/verify_otp.dart';
 import 'package:flutter/material.dart';
-
+import 'package:expo/utils/auth_user.dart';
 import '../../core/constant/colors.dart';
 import '../../core/widget/buttons/dynamic_button.dart';
 import '../../core/widget/textfields/my_text_field.dart';
@@ -16,10 +17,14 @@ class _SignupState extends State<Signup> {
   bool isTaxDeclarationChecked = false;
   bool isPasswordVisible = false;
   bool isButtonEnabled = false;
+  bool isLoading = false;
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController partnerCodeController = TextEditingController();
+
+  final AuthUser authUser = AuthUser();
+
   String? selectedCountry;
 
   final List<String> countries = [
@@ -41,17 +46,87 @@ class _SignupState extends State<Signup> {
   void _validateForm() {
     setState(() {
       isButtonEnabled =
-          emailController.text.isNotEmpty &&
-              passwordController.text.isNotEmpty &&
-              selectedCountry != null &&
-              isTaxDeclarationChecked;
+          emailController.text.trim().isNotEmpty &&
+          passwordController.text.trim().isNotEmpty &&
+          selectedCountry != null &&
+          isTaxDeclarationChecked;
     });
+  }
+
+  // ================= SIGNUP API =================
+
+  Future<void> signupApi() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final response = await authUser.callApi(
+        method: "POST",
+        api: "/api/users/signup",
+        data: {
+          "email": emailController.text.trim(),
+          "password": passwordController.text.trim(),
+          "location": selectedCountry,
+          "partner_code": partnerCodeController.text.trim(),
+        },
+      );
+
+      print("Signup Response: $response");
+
+      // ✅ Convert status safely (handles int OR string)
+      final status = response["status"].toString();
+
+      if (status == "1") {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              response["message"] ??
+                  "Signup successful. Please verify your email.",
+            ),
+          ),
+        );
+
+        // Go to login screen
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => VerifyOtpScreen(email: emailController.text.trim())),
+        );
+      } else {
+        if (!mounted) return;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response["message"] ?? "Signup Failed"),
+          ),
+        );
+      }
+    } catch (e) {
+      print("Signup Error: $e");
+
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Server error. Please try again."),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
   }
 
   @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
+    partnerCodeController.dispose();
     super.dispose();
   }
 
@@ -117,13 +192,17 @@ class _SignupState extends State<Signup> {
                 ),
 
                 const SizedBox(height: 15),
+
                 countryDropdown(),
+
                 const SizedBox(height: 15),
+
                 MyTextField(
                   label: "Partner Code",
                   prefixIcon: Icons.numbers,
                   controller: partnerCodeController,
                 ),
+
                 const SizedBox(height: 20),
 
                 Row(
@@ -143,7 +222,8 @@ class _SignupState extends State<Signup> {
                       child: GestureDetector(
                         onTap: () {
                           setState(() {
-                            isTaxDeclarationChecked = !isTaxDeclarationChecked;
+                            isTaxDeclarationChecked =
+                                !isTaxDeclarationChecked;
                             _validateForm();
                           });
                         },
@@ -162,36 +242,19 @@ class _SignupState extends State<Signup> {
                     ),
                   ],
                 ),
+
                 const SizedBox(height: 30),
 
                 DynamicButton(
-                  text: "Get OTP",
-                  isEnabled: isButtonEnabled,
-                  onPressed: isButtonEnabled ? () {} : null,
+                  text: isLoading ? "Please wait..." : "Get OTP",
+                  isEnabled: isButtonEnabled && !isLoading,
+                  onPressed:
+                      isButtonEnabled && !isLoading ? signupApi : null,
                 ),
 
                 const SizedBox(height: 15),
 
                 _loginText(),
-
-                const SizedBox(height: 20),
-                const Divider(thickness: 1),
-                const SizedBox(height: 15),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _socialButton('assets/images/google.png'),
-                    const SizedBox(width: 10),
-                    const Text(
-                      "Signup with Google",
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
 
                 const SizedBox(height: 40),
               ],
@@ -202,46 +265,32 @@ class _SignupState extends State<Signup> {
     );
   }
 
-  // ---------------- COUNTRY DROPDOWN ----------------
-
   Widget countryDropdown() {
     return DropdownButtonFormField<String>(
       value: selectedCountry,
-      hint: const Text(
-        "Select Country",
-        style: TextStyle(color: Colors.grey, fontSize: 14),
-      ),
-      icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
+      hint: const Text("Select Country"),
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.public, color: Colors.grey, size: 18),
+        prefixIcon: const Icon(Icons.public),
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        enabledBorder: OutlineInputBorder(
+        border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Colors.black12, width: 1),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30),
-          borderSide: const BorderSide(color: Colors.black12, width: 1),
         ),
       ),
-      items: countries.map((country) {
-        return DropdownMenuItem<String>(
-          value: country,
-          child: Text(country),
-        );
-      }).toList(),
+      items: countries
+          .map((country) => DropdownMenuItem(
+                value: country,
+                child: Text(country),
+              ))
+          .toList(),
       onChanged: (value) {
         setState(() {
           selectedCountry = value;
-          _validateForm(); // re-check button state
+          _validateForm();
         });
       },
     );
   }
-
-  // ---------------- UI COMPONENTS ----------------
 
   Widget _backButton() {
     return GestureDetector(
@@ -255,7 +304,8 @@ class _SignupState extends State<Signup> {
         ),
         child: const Padding(
           padding: EdgeInsetsDirectional.only(start: 6),
-          child: Icon(Icons.arrow_back_ios, size: 18, color: Colors.white),
+          child: Icon(Icons.arrow_back_ios,
+              size: 18, color: Colors.white),
         ),
       ),
     );
@@ -282,25 +332,6 @@ class _SignupState extends State<Signup> {
           ),
         ),
       ],
-    );
-  }
-
-  Widget _socialButton(String asset) {
-    return Container(
-      height: 40,
-      width: 40,
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 4,
-          ),
-        ],
-      ),
-      child: Image.asset(asset),
     );
   }
 }
