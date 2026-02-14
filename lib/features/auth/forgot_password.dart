@@ -44,7 +44,8 @@ class _ForgotPasswordState extends State<ForgotPassword> {
     setState(() => isLoading = true);
 
     try {
-      final response = await _authUser.callApi(
+      final response = await _authUser.
+      callApi(
         method: "POST",
         api: "/api/users/forgot-password",
         data: {

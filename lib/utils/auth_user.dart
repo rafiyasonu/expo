@@ -1,8 +1,9 @@
+import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-const String baseURL = "http://13.203.231.29:5000";
+const String baseURL = "https://api.theexpo-t.com";
 
 class AuthUser {
 
@@ -26,7 +27,14 @@ class AuthUser {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString("token");
   }
-
+  void testDNS() async {
+    try {
+      final result = await InternetAddress.lookup('api.theexpo-t.com');
+      print(result);
+    } catch (e) {
+      print('DNS failed: $e');
+    }
+  }
   /// ==============================
   /// MAIN API CALL FUNCTION
   /// ==============================
